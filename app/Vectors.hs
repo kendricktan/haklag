@@ -1,3 +1,6 @@
+{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE FlexibleContexts #-}
+
 module Vectors where
 
 import Control.Applicative
@@ -32,5 +35,26 @@ instance Applicative Vector where
     (*>) _ b = b
     (<*) a _ = a
 
+
 instance Monad Vector where
-    (>>=) v f = undefined
+    (>>=) Empty _        = Empty
+    (>>=) (Vector a b) f = f a <> (b >>= f)
+
+
+instance Foldable Vector where
+    foldMap f Empty        = mempty
+    foldMap f (Vector a b) = f a <> foldMap f b
+
+
+instance Num a => Num (Vector a) where
+    (*) Empty a                   = a
+    (*) a Empty                   = a
+    (*) (Vector a b) (Vector c d) = Vector (a * c) (b * d)
+
+    (+) Empty a                   = a
+    (+) a Empty                   = a
+    (+) (Vector a b) (Vector c d) = Vector (a + c) (b + d)
+
+
+dotProduct :: Num a => Vector a -> Vector a -> a
+dotProduct v1 v2 = sum $ v1 * v2
